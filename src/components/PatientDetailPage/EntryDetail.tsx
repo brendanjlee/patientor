@@ -1,5 +1,5 @@
 import { Entry } from "../../types";
-import { Box, borders } from "@mui/system";
+import { Box } from "@mui/system";
 import {
   LocalHospital,
   MedicalServices,
