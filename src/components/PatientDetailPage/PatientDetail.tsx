@@ -1,7 +1,8 @@
 import { useParams } from "react-router-dom";
-import { Patient, Gender, Entry } from "../../types";
+import { Patient, Gender, Entry, Diagnosis } from "../../types";
 import { useState, useEffect } from "react";
 import patientService from "../../services/patients";
+import diagnosisService from "../../services/diagnosis";
 
 // icons
 import MaleIcon from "@mui/icons-material/Male";
@@ -15,6 +16,7 @@ interface PatientHeaderProps {
 
 interface EntryItemProps {
   entry: Entry;
+  diagnosis: Diagnosis[];
 }
 
 const PatientHeader = ({ name, gender }: PatientHeaderProps) => {
@@ -38,16 +40,21 @@ const PatientHeader = ({ name, gender }: PatientHeaderProps) => {
   );
 };
 
-const EntryItem = ({ entry }: EntryItemProps) => {
+const EntryItem = ({ entry, diagnosis }: EntryItemProps) => {
   return (
     <>
       <p>
         {entry.date} <em>{entry.description}</em>
       </p>
       <ul>
-        {entry.diagnosisCodes?.map((code, index) => (
-          <li key={index}>{code}</li>
-        ))}
+        {entry.diagnosisCodes?.map((code, index) => {
+          const diagItem = diagnosis.find((d) => d.code === code);
+          return (
+            <li key={index}>
+              {code} {diagItem?.name}
+            </li>
+          );
+        })}
       </ul>
     </>
   );
@@ -55,8 +62,23 @@ const EntryItem = ({ entry }: EntryItemProps) => {
 
 const PatientDetail = () => {
   const [patient, setPatient] = useState<Patient | undefined>(undefined);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>();
   const { id } = useParams();
 
+  // fetch diagnosis
+  useEffect(() => {
+    const fetchDiagnosis = async () => {
+      try {
+        const allDiagnoses = await diagnosisService.getAllDiagnosis();
+        setDiagnoses(allDiagnoses); // Correctly set the diagnoses
+      } catch (error) {
+        console.error("Failed to fetch diagnoses", error);
+      }
+    };
+    void fetchDiagnosis();
+  }, []);
+
+  // fetch patients
   useEffect(() => {
     const fetchPatient = async () => {
       if (id === undefined) {
@@ -66,13 +88,15 @@ const PatientDetail = () => {
       const patient = await patientService.getPatient(id);
       setPatient(patient);
     };
+
     void fetchPatient();
   }, [id]);
 
-  if (patient === undefined) {
+  if (patient === undefined || diagnoses === undefined) {
     return <h1>404: Patient not found</h1>;
   }
   console.log(patient);
+  console.log(diagnoses);
   return (
     <div>
       <PatientHeader name={patient.name} gender={patient.gender} />
@@ -80,7 +104,7 @@ const PatientDetail = () => {
       <p>occupation: {patient.occupation}</p>
       <h2>Entries</h2>
       {patient.entries.map((entry) => (
-        <EntryItem key={entry.id} entry={entry} />
+        <EntryItem key={entry.id} entry={entry} diagnosis={diagnoses} />
       ))}
     </div>
   );
