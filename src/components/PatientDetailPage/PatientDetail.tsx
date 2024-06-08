@@ -1,8 +1,14 @@
 import { useParams } from "react-router-dom";
-import { Patient, Gender, Entry, Diagnosis } from "../../types";
+import { Patient, Gender, Diagnosis } from "../../types";
 import { useState, useEffect } from "react";
 import patientService from "../../services/patients";
 import diagnosisService from "../../services/diagnosis";
+
+// styling
+import { Box } from "@mui/system";
+
+// components
+import EntryItem from "./EntryDetail";
 
 // icons
 import MaleIcon from "@mui/icons-material/Male";
@@ -12,11 +18,6 @@ import TransgenderIcon from "@mui/icons-material/Transgender";
 interface PatientHeaderProps {
   name: string;
   gender: Gender;
-}
-
-interface EntryItemProps {
-  entry: Entry;
-  diagnosis: Diagnosis[];
 }
 
 const PatientHeader = ({ name, gender }: PatientHeaderProps) => {
@@ -40,29 +41,10 @@ const PatientHeader = ({ name, gender }: PatientHeaderProps) => {
   );
 };
 
-const EntryItem = ({ entry, diagnosis }: EntryItemProps) => {
-  return (
-    <>
-      <p>
-        {entry.date} <em>{entry.description}</em>
-      </p>
-      <ul>
-        {entry.diagnosisCodes?.map((code, index) => {
-          const diagItem = diagnosis.find((d) => d.code === code);
-          return (
-            <li key={index}>
-              {code} {diagItem?.name}
-            </li>
-          );
-        })}
-      </ul>
-    </>
-  );
-};
-
 const PatientDetail = () => {
   const [patient, setPatient] = useState<Patient | undefined>(undefined);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>();
+  const [loading, setLoading] = useState<boolean>(true);
   const { id } = useParams();
 
   // fetch diagnosis
@@ -88,25 +70,28 @@ const PatientDetail = () => {
       const patient = await patientService.getPatient(id);
       setPatient(patient);
     };
-
     void fetchPatient();
+    setLoading(false);
   }, [id]);
-
+  if (loading) {
+    return <h1>Loading Patient Data</h1>;
+  }
   if (patient === undefined || diagnoses === undefined) {
     return <h1>404: Patient not found</h1>;
   }
   console.log(patient);
   console.log(diagnoses);
   return (
-    <div>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: "5px" }}>
       <PatientHeader name={patient.name} gender={patient.gender} />
       <p>ssn: {patient.ssn}</p>
       <p>occupation: {patient.occupation}</p>
       <h2>Entries</h2>
       {patient.entries.map((entry) => (
-        <EntryItem key={entry.id} entry={entry} diagnosis={diagnoses} />
+        // <EntryItem key={entry.id} entry={entry} diagnosis={diagnoses} />
+        <EntryItem key={entry.id} entry={entry} />
       ))}
-    </div>
+    </Box>
   );
 };
 
