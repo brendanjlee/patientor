@@ -54,15 +54,17 @@ const ByType = ({ entry }: Props) => {
     case "Hospital":
       return (
         <>
-          <p>Discharge Date: {entry.discharge.date}</p>
-          <p>Discharge Condition: {entry.discharge.criteria}</p>
+          <p>- Discharge Date: {entry.discharge.date}</p>
+          <p>- Discharge Condition: {entry.discharge.criteria}</p>
         </>
       );
     case "OccupationalHealthcare":
-      return <p>Employer: {entry.employerName}</p>;
+      return <p>- Employer: {entry.employerName}</p>;
     case "HealthCheck":
       return (
-        <p>Health Check Rating: {HealthCheckRating[entry.healthCheckRating]}</p>
+        <p>
+          - Health Check Rating: {HealthCheckRating[entry.healthCheckRating]}
+        </p>
       );
   }
 };
