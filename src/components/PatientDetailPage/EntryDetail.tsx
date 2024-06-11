@@ -1,4 +1,4 @@
-import { Entry } from "../../types";
+import { Entry, HealthCheckRating } from "../../types";
 import { Box } from "@mui/system";
 import {
   LocalHospital,
@@ -49,6 +49,24 @@ const EntryIcon = ({ entry }: Props) => {
   }
 };
 
+const ByType = ({ entry }: Props) => {
+  switch (entry.type) {
+    case "Hospital":
+      return (
+        <>
+          <p>Discharge Date: {entry.discharge.date}</p>
+          <p>Discharge Condition: {entry.discharge.criteria}</p>
+        </>
+      );
+    case "OccupationalHealthcare":
+      return <p>Employer: {entry.employerName}</p>;
+    case "HealthCheck":
+      return (
+        <p>Health Check Rating: {HealthCheckRating[entry.healthCheckRating]}</p>
+      );
+  }
+};
+
 // share items: desc, date, specialist,
 const EntryItem = ({ entry }: Props) => {
   return (
@@ -61,6 +79,10 @@ const EntryItem = ({ entry }: Props) => {
       </p>
       <HealthIcon entry={entry} />
       <p>Diagnose by {entry.specialist}</p>
+      <p>
+        <b>Specific Notes:</b>
+      </p>
+      <ByType entry={entry} />
     </Box>
   );
 };
